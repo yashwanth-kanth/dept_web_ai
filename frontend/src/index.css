@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0F172A;
+  --color-navy-light: #1E293B;
+  --color-blueAccent: #38BDF8;
+  --color-redAccent: #8c2633; /* Light shade of maroon */
+  --font-sans: "Inter", sans-serif;
+
+  /* Redefining the red scale globally to maroon shades based on the requested palette */
+  --color-red-50: #fdf3f4;
+  --color-red-100: #fae4e7;
+  --color-red-200: #f4cdd3;
+  --color-red-300: #eba7b3;
+  --color-red-400: #de7688;
+  --color-red-500: #cc4960;
+  --color-red-600: #b52d47;
+  --color-red-700: #982136;
+  --color-red-800: #7e1f31;
+  --color-red-900: #6c1d2e;
+  --color-red-950: #3d0b16; /* Dark maroon matching the user's reference image */
+}
+
+body {
+  @apply bg-white text-gray-900 font-sans antialiased selection:bg-redAccent selection:text-white;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #051626;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00D4FF;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #00aacc;
+}
