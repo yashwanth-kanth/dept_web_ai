@@ -11,8 +11,24 @@ export default defineSchema({
     description: v.string(),
     speakers: v.optional(v.string()),
     image: v.optional(v.string()),
+    gallery: v.optional(v.array(v.string())),
+    tag: v.optional(v.string()),
+    color: v.optional(v.string()),
     status: v.union(v.literal("upcoming"), v.literal("past")),
+    isFeatured: v.optional(v.boolean()),
     rsvps_count: v.number(),
+  }),
+  siteConfig: defineTable({
+    key: v.string(), // 'hero', 'stats', 'vision', etc.
+    value: v.any(),
+  }).index("by_key", ["key"]),
+  partners: defineTable({
+    name: v.string(),
+    logo: v.string(), // Small logo for grayscale list
+    image: v.optional(v.string()), // Main card background image
+    icon: v.optional(v.string()), // Lucide icon name or image
+    tags: v.array(v.string()),
+    order: v.optional(v.number()),
   }),
   academicPrograms: defineTable({
     name: v.string(),

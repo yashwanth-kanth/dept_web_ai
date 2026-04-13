@@ -1,19 +1,35 @@
-import React, { useState } from 'react';
-import { signIn, signUp } from '../auth-client';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { signIn, signUp, useSession } from '../auth-client';
+import { useNavigate, Navigate } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { data: session, isPending } = useSession();
+
+  // If already logged in, redirect to dashboard
+  if (!isPending && session) {
+    return <Navigate to="/admin/dashboard" />;
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await signIn.email({ email, password });
-      if (res.error) throw new Error(res.error.message || "Failed to sign in");
+      const res = await signIn.email({ 
+        email, 
+        password,
+        // callbackURL: '/admin/dashboard' // removed for manual navigation
+      });
+      
+      if (res.error) {
+        throw new Error(res.error.message || "Failed to sign in");
+      }
+      
+      // If we are here, it means success.
+      // Force navigation immediately.
       navigate('/admin/dashboard');
     } catch (err) {
       alert("Authentication error: " + err.message);
@@ -21,6 +37,14 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-redAccent"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto mt-32 mb-20 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
@@ -42,6 +66,7 @@ export default function Login() {
             onChange={e => setEmail(e.target.value)} 
             className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-redAccent focus:border-transparent outline-none transition" 
             required 
+            placeholder="admin@example.com"
           />
         </div>
         <div>
@@ -52,6 +77,7 @@ export default function Login() {
             onChange={e => setPassword(e.target.value)} 
             className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-redAccent focus:border-transparent outline-none transition" 
             required 
+            placeholder="••••••••"
           />
         </div>
         

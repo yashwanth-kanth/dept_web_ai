@@ -14,6 +14,9 @@ import type * as authSchema from "../authSchema.js";
 import type * as events from "../events.js";
 import type * as faculty from "../faculty.js";
 import type * as http from "../http.js";
+import type * as partners from "../partners.js";
+import type * as siteConfig from "../siteConfig.js";
+import type * as storage from "../storage.js";
 
 import type {
   ApiFromModules,
@@ -28,6 +31,9 @@ declare const fullApi: ApiFromModules<{
   events: typeof events;
   faculty: typeof faculty;
   http: typeof http;
+  partners: typeof partners;
+  siteConfig: typeof siteConfig;
+  storage: typeof storage;
 }>;
 
 /**

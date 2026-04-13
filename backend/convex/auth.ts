@@ -11,7 +11,6 @@ export const getAuth = (ctx: any) => {
     emailAndPassword: {
       enabled: true,
     },
-    // Ensure the base URL matches the Convex site URL for HTTP actions
     baseURL: process.env.CONVEX_SITE_URL + "/api/auth",
     trustedOrigins: [process.env.SITE_URL, "http://localhost:5173"].filter(Boolean) as string[],
     plugins: [

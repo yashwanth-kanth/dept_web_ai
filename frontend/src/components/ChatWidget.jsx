@@ -1,9 +1,15 @@
 import React, { useState } from 'react';
 import { MessageSquareText, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from 'convex/react';
+import { api } from '../../../backend/convex/_generated/api';
+
+const resolveUrl = (val) => val;
 
 export default function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const configs = useQuery(api.siteConfig.getConfigs) || [];
+  const getVal = (key, fallback) => configs.find(c => c.key === key)?.value || fallback;
 
   return (
     <>
@@ -20,9 +26,9 @@ export default function ChatWidget() {
             <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-white">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center p-1 border border-gray-200">
-                  <img src="/rit-logo.png" alt="Logo" className="w-full h-full object-contain" />
+                  <img src={resolveUrl(getVal('header_logo', '/rit-logo.png'))} alt="Logo" className="w-full h-full object-contain" />
                 </div>
-                <h3 className="font-semibold text-gray-800 text-base">New conversation</h3>
+                <h3 className="font-semibold text-gray-800 text-base">{getVal('chat_header_title', 'New conversation')}</h3>
               </div>
               <button 
                 onClick={() => setIsOpen(false)}
@@ -36,7 +42,7 @@ export default function ChatWidget() {
             {/* Body */}
             <div className="p-5 flex-1 bg-white">
               <h4 className="text-[15px] font-semibold text-gray-800 mb-5 leading-snug">
-                Please give us your information to support you better
+                {getVal('chat_body_title', 'Please give us your information to support you better')}
               </h4>
               
               <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>

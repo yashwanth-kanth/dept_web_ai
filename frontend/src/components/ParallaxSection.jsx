@@ -175,7 +175,7 @@ export function ScrollReveal({ children, className = "" }) {
 /**
  * Image with variable parallax speed.
  */
-export function VariableSpeedImage({ src, alt, speed = 0.2, className = "" }) {
+export function VariableSpeedImage({ src, alt, speed = 0.2, className = "", contain = false }) {
   const ref = React.useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -189,8 +189,8 @@ export function VariableSpeedImage({ src, alt, speed = 0.2, className = "" }) {
       <motion.img 
         src={src} 
         alt={alt} 
-        style={{ y, scale: 1.5 }} 
-        className="absolute inset-0 w-full h-full object-cover" 
+        style={{ y, scale: contain ? 1.05 : 1.5 }} 
+        className={`absolute inset-0 w-full h-full ${contain ? 'object-contain p-8' : 'object-cover'}`} 
       />
     </div>
   );

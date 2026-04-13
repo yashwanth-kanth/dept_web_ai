@@ -4,7 +4,8 @@
   --color-navy: #0F172A;
   --color-navy-light: #1E293B;
   --color-blueAccent: #38BDF8;
-  --color-redAccent: #8c2633; /* Light shade of maroon */
+  --color-redAccent: var(--accent-color); 
+  --color-red-900: var(--primary-color);
   --font-sans: "Inter", sans-serif;
 
   /* Redefining the red scale globally to maroon shades based on the requested palette */
@@ -17,8 +18,7 @@
   --color-red-600: #b52d47;
   --color-red-700: #982136;
   --color-red-800: #7e1f31;
-  --color-red-900: #6c1d2e;
-  --color-red-950: #3d0b16; /* Dark maroon matching the user's reference image */
+  --color-red-950: #3d0b16; 
 }
 
 body {

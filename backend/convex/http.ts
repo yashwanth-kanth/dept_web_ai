@@ -21,12 +21,42 @@ const handleAuth = httpAction(async (ctx: any, request: Request) => {
   const auth = getAuth(ctx);
   const response = await auth.handler(request);
   
-  // Inject CORS headers into the better-auth response
   const newHeaders = new Headers(response.headers);
   const cors = CORS_HEADERS(request);
   Object.entries(cors).forEach(([key, value]) => {
     newHeaders.set(key, value);
   });
+
+  // CRITICAL FIX: Force SameSite=None; Secure for cross-origin session persistence
+  // Better-Auth may default to Lax/Secure in some environments, which blocks localhost cookies.
+  const setCookies = response.headers.get("set-cookie");
+  if (setCookies) {
+    // Note: get('set-cookie') in many environments can return a comma-separated string 
+    // of all cookies, which is tricky. But for sign-in, there's usually just one main session cookie.
+    // We rewrite the header to ensure it's compatible with cross-site requests.
+    const cookiesArr = setCookies.split(/,(?=[^;]+=[^;]+)/); // Split cookies properly
+    newHeaders.delete("set-cookie");
+    cookiesArr.forEach(cookie => {
+      let modified = cookie.trim();
+      // Ensure SameSite=None and Secure
+      if (modified.includes("SameSite=")) {
+        modified = modified.replace(/SameSite=[^;]+/i, "SameSite=None");
+      } else {
+        modified += "; SameSite=None";
+      }
+      
+      if (!modified.includes("Secure")) {
+        modified += "; Secure";
+      }
+
+      // Ensure Partitioned for newer browser privacy rules (optional but good)
+      if (!modified.includes("Partitioned")) {
+        // modified += "; Partitioned";
+      }
+      
+      newHeaders.append("set-cookie", modified);
+    });
+  }
 
   return new Response(response.body, {
     status: response.status,

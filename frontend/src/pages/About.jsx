@@ -1,36 +1,67 @@
+import React from 'react';
 import { motion } from 'framer-motion';
-import ParallaxSection, { ParallaxImage } from '../components/ParallaxSection';
+import { useQuery } from 'convex/react';
+import { api } from '../../../backend/convex/_generated/api';
+import ParallaxSection, { ScrollReveal, VariableSpeedImage, SkewScroll } from '../components/ParallaxSection';
+
+const resolveUrl = (val) => val;
 
 export default function About() {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 overflow-hidden">
-      <ParallaxSection distance={-40} className="text-center mb-16">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 uppercase tracking-tight">About the Department</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
-          The Department of Artificial Intelligence and Data Science at Ramco Institute of Technology, Rajapalayam is committed to excellence in teaching, research, and innovation.
-        </p>
-      </ParallaxSection>
+  const configs = useQuery(api.siteConfig.getConfigs) || [];
+  const getVal = (key, fallback) => configs.find(c => c.key === key)?.value || fallback;
 
-      <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
-        <ParallaxSection distance={60} rotate={2} className="relative z-10">
-          <ParallaxImage
-            src="/rit.jpg"
-            alt="Rajapalayam Campus"
-            className="aspect-video rounded-2xl border border-gray-200 shadow-2xl"
-          />
-        </ParallaxSection>
-        <ParallaxSection distance={-60} xDistance={-20} className="space-y-6">
-          <h2 className="text-3xl font-black text-gray-900 uppercase">Our Vision</h2>
-          <p className="text-gray-600 leading-relaxed font-medium">
-            To be a center of excellence in Artificial Intelligence and Data Science, producing socially responsible professionals who can solve complex global challenges using state-of-the-art technologies.
-          </p>
-          <h2 className="text-3xl font-black text-gray-900 pt-4 uppercase">Our Mission</h2>
-          <ul className="list-disc leading-relaxed text-gray-600 pl-5 space-y-3 font-medium">
-            <li>Provide rigorous academic programs aligned with industry standards.</li>
-            <li>Foster a culture of innovation, research, and entrepreneurship.</li>
-            <li>Collaborate with tech leaders to impart forward-looking skills.</li>
-          </ul>
-        </ParallaxSection>
+  return (
+    <div className="pt-32 pb-24 bg-white text-gray-900 overflow-hidden">
+      <div className="max-w-6xl mx-auto px-8">
+        
+        {/* Campus Image Section */}
+        <ScrollReveal className="mb-24">
+          <div className="relative rounded-[3rem] overflow-hidden group shadow-2xl border border-gray-100">
+            <VariableSpeedImage 
+              src={resolveUrl(getVal('about_campus_image', '/rit.jpg'))} 
+              className="w-full h-[500px] object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-1000" 
+              speed={0.05} 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-12">
+              <SkewScroll>
+                <h1 className="text-6xl md:text-8xl font-black text-white uppercase tracking-tighter self-end leading-none">Our Campus</h1>
+              </SkewScroll>
+            </div>
+          </div>
+        </ScrollReveal>
+
+        <div className="grid md:grid-cols-2 gap-20 items-start mb-32">
+          <ScrollReveal direction="left">
+            <h2 className="text-4xl font-black uppercase tracking-tighter mb-8 leading-none">
+              Modern <br />
+              <span className="text-redAccent text-5xl md:text-6xl">Intelligence</span>
+            </h2>
+            <p className="text-lg font-bold text-gray-500 uppercase tracking-tight leading-tight whitespace-pre-wrap">
+              {getVal('about_story_text', "Founded with a vision to spearhead the data revolution, the Department of Artificial Intelligence and Data Science at Ramco Institute of Technology provides an immersive ecosystem for future engineers.")}
+            </p>
+          </ScrollReveal>
+
+          <div className="space-y-12">
+            <ScrollReveal direction="right" delay={0.2}>
+               <div className="p-10 bg-gray-50 rounded-[2.5rem] border border-gray-100 hover:shadow-xl transition-all">
+                  <h3 className="text-xs font-black text-redAccent uppercase tracking-widest mb-4">Our Vision</h3>
+                  <p className="text-xl font-black text-gray-900 leading-tight uppercase tracking-tighter">
+                    {getVal('vision_statement', "To emerge as a center of excellence in AI and DS by imparting tech-prowess and ethical values.")}
+                  </p>
+               </div>
+            </ScrollReveal>
+
+            <ScrollReveal direction="right" delay={0.4}>
+               <div className="p-10 bg-redAccent rounded-[2.5rem] border border-red-900 shadow-2xl shadow-redAccent/20">
+                  <h3 className="text-xs font-black text-white/60 uppercase tracking-widest mb-4">Our Mission</h3>
+                  <p className="text-xl font-black text-white leading-tight uppercase tracking-tighter">
+                    {getVal('mission_statement', "To provide quality education, foster research, and produce globally competent professionals.")}
+                  </p>
+               </div>
+            </ScrollReveal>
+          </div>
+        </div>
+
       </div>
     </div>
   );
