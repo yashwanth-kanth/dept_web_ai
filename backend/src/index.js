@@ -10,6 +10,21 @@ import partnersRouter from './routes/partners.js';
 import uploadRouter from './routes/upload.js';
 import { rateLimit } from 'express-rate-limit';
 
+// Per-account login lockout (5 failures in 15 min → locked 15 min)
+const loginAttempts = new Map();
+const MAX_ATTEMPTS = 5;
+const WINDOW_MS = 15 * 60 * 1000;
+const LOCKOUT_MS = 15 * 60 * 1000;
+// Clean up stale entries every 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [email, rec] of loginAttempts) {
+    if ((!rec.lockedUntil || now > rec.lockedUntil) && now - rec.firstAttempt > WINDOW_MS) {
+      loginAttempts.delete(email);
+    }
+  }
+}, 30 * 60 * 1000);
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -50,6 +65,44 @@ app.use(express.json());
 // Serve uploaded files statically
 const uploadsDir = path.resolve(__dirname, '..', process.env.UPLOADS_DIR || 'uploads');
 app.use('/uploads', express.static(uploadsDir));
+
+// Per-account login lockout middleware
+app.post('/api/auth/sign-in/email', (req, res, next) => {
+  const email = req.body?.email?.toLowerCase?.();
+  if (!email) return next();
+
+  const now = Date.now();
+  const rec = loginAttempts.get(email);
+
+  if (rec?.lockedUntil && now < rec.lockedUntil) {
+    const remaining = Math.ceil((rec.lockedUntil - now) / 60000);
+    return res.status(429).json({ error: `Account locked due to too many failed attempts. Try again in ${remaining} minute(s).` });
+  }
+
+  // Intercept response to track success/failure
+  const origEnd = res.end.bind(res);
+  res.end = function (chunk, ...args) {
+    if (res.statusCode >= 400) {
+      const entry = loginAttempts.get(email) || { count: 0, firstAttempt: now };
+      if (now - entry.firstAttempt > WINDOW_MS) {
+        entry.count = 1;
+        entry.firstAttempt = now;
+        delete entry.lockedUntil;
+      } else {
+        entry.count++;
+      }
+      if (entry.count >= MAX_ATTEMPTS) {
+        entry.lockedUntil = now + LOCKOUT_MS;
+      }
+      loginAttempts.set(email, entry);
+    } else {
+      loginAttempts.delete(email);
+    }
+    return origEnd(chunk, ...args);
+  };
+
+  next();
+});
 
 // Block open self-registration — must be an existing signed-in admin
 app.post('/api/auth/sign-up/email', async (req, res, next) => {
