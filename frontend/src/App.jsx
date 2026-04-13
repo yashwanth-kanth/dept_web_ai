@@ -4,6 +4,8 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
 import ParallaxSection from './components/ParallaxSection';
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from './lib/api';
 
 // Pages
 import Home from './pages/Home';
@@ -14,22 +16,22 @@ import Contact from './pages/Contact';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 
-
-import { useQuery } from 'convex/react';
-import { api } from '../../backend/convex/_generated/api';
 import { ReactLenis } from 'lenis/react';
 
 function App() {
-  const configs = useQuery(api.siteConfig.getConfigs) || [];
+  const { data: configs = [] } = useQuery({
+    queryKey: ['config'],
+    queryFn: () => apiFetch.get('/api/config'),
+  });
+
   const getVal = (key, fallback) => configs.find(c => c.key === key)?.value || fallback;
-  
+
   const customCss = getVal('global_custom_css', '');
   const siteTitle = getVal('global_site_title', 'AI & DS Department | RIT');
   const faviconUrl = getVal('global_favicon_url', '/rit-logo.png');
 
-  // Dynamic Theme Colors
-  const primaryColor = getVal('theme_primary_color', '#991B1B'); // Default maroon-900
-  const accentColor = getVal('theme_accent_color', '#DC2626');  // Default red-600
+  const primaryColor = getVal('theme_primary_color', '#991B1B');
+  const accentColor = getVal('theme_accent_color', '#DC2626');
   const navbarBg = getVal('header_bg_color', 'rgba(255, 255, 255, 0.9)');
   const footerBg = getVal('footer_bg_color', 'transparent');
 
@@ -45,19 +47,16 @@ function App() {
   React.useEffect(() => {
     document.title = siteTitle;
     const link = document.querySelector("link[rel~='icon']");
-    if (link) {
-      link.href = faviconUrl;
-    }
+    if (link) link.href = faviconUrl;
   }, [siteTitle, faviconUrl]);
 
   return (
     <ReactLenis root>
-      {/* Global Style Injection */}
       <style id="dynamic-theme">
         {themeVariables}
         {customCss}
       </style>
-      
+
       <Router>
         <div className="flex flex-col min-h-screen relative bg-white">
             <Navbar />

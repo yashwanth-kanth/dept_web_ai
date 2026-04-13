@@ -9,8 +9,20 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    fs: {
-      allow: ['..'] // Allow serving files from backend
-    }
+    port: 5000,
+    host: true,
+    allowedHosts: ['ramcoad.com', 'www.ramcoad.com'],
+    proxy: {
+      '/api': 'http://127.0.0.1:3001',
+      '/uploads': 'http://127.0.0.1:3001',
+    },
+  },
+  preview: {
+    port: 5000,
+    host: true,
+    proxy: {
+      '/api': 'http://127.0.0.1:3001',
+      '/uploads': 'http://127.0.0.1:3001',
+    },
   }
 })

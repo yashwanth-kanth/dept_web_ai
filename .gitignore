@@ -4,3 +4,4 @@ dist/
 build/
 .convex/
 .vite/
+backend/uploads/
