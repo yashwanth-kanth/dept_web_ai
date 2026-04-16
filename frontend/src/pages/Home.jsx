@@ -25,6 +25,30 @@ function AnimatedStat({ value, suffix, label, colorClass = "text-redAccent", cla
   return <span ref={ref} className={className}>{count}{suffix}</span>;
 }
 
+const LABELS = ['Click Here', 'School Program Registration Form'];
+
+function BtnLabel() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx(i => (i + 1) % LABELS.length), 1800);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <AnimatePresence mode="wait">
+      <motion.span
+        key={idx}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className="inline-block whitespace-nowrap"
+      >
+        {LABELS[idx]}
+      </motion.span>
+    </AnimatePresence>
+  );
+}
+
 export default function Home() {
   const { scrollY } = useScroll();
   const yHeroText = useTransform(scrollY, [0, 800], [0, 200]);
@@ -102,6 +126,34 @@ export default function Home() {
               </Magnetic>
             </div>
           </div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ delay: 0.7, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-8 inline-flex"
+          >
+            {/* Ping rings */}
+            <span className="relative inline-flex">
+              <span className="absolute inset-0 rounded-full bg-yellow-400 animate-ping opacity-60" />
+              <span className="absolute inset-0 rounded-full bg-yellow-300 animate-ping opacity-30" style={{ animationDelay: '0.4s' }} />
+              <motion.div
+                animate={{ scale: [1, 1.04, 1] }}
+                transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
+              >
+                <Link
+                  to="/school-program-reg"
+                  className="relative inline-flex items-center gap-2 px-8 py-4 bg-yellow-400 text-gray-900 font-black text-sm uppercase tracking-widest rounded-full shadow-[0_0_30px_6px_rgba(250,204,21,0.5)] hover:shadow-[0_0_40px_12px_rgba(250,204,21,0.7)] hover:bg-yellow-300 transition-all duration-300 overflow-hidden"
+                  style={{ minWidth: '260px', justifyContent: 'center' }}
+                >
+                  <span className="relative flex h-2.5 w-2.5 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-900 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-900" />
+                  </span>
+                  <BtnLabel />
+                </Link>
+              </motion.div>
+            </span>
+          </motion.div>
         </motion.div>
         <FloatingShape size={100} speed={0.8} top="20%" left="10%" color="bg-redAccent/[0.015]" />
         <FloatingShape size={80} speed={1.2} top="60%" left="80%" color="bg-gray-50/50" />

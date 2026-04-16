@@ -3,7 +3,8 @@ import { useSession, signOut } from '../auth-client';
 import { Navigate, Link } from 'react-router-dom';
 import {
   LayoutDashboard, Settings, Calendar, Users as UsersIcon, Plus, Trash2, Edit3,
-  ExternalLink, LogOut, Briefcase, Image as ImageIcon, Upload, CheckCircle, AlertCircle, Code as CodeIcon
+  ExternalLink, LogOut, Briefcase, Image as ImageIcon, Upload, CheckCircle, AlertCircle, Code as CodeIcon,
+  ClipboardList, Download, ChevronUp, ChevronDown
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiFetch } from '../lib/api';
@@ -11,6 +12,7 @@ import { apiFetch } from '../lib/api';
 export default function AdminDashboard() {
   const { data: session, isPending } = useSession();
   const [activeTab, setActiveTab] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (isPending) return <div className="min-h-screen flex items-center justify-center font-black text-gray-400 uppercase tracking-widest">Loading...</div>;
   if (!session) return <Navigate to="/admin" />;
@@ -21,11 +23,54 @@ export default function AdminDashboard() {
     { id: 'events', label: 'Events', icon: Calendar },
     { id: 'partners', label: 'Partners', icon: Briefcase },
     { id: 'users', label: 'Manage Users', icon: UsersIcon },
+    { id: 'schoolregs', label: 'School Registrations', icon: ClipboardList },
   ];
 
+  const currentTab = tabs.find(t => t.id === activeTab);
+
   return (
-    <div className="flex min-h-screen bg-gray-50 pt-20">
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-20">
+    <div className="flex min-h-screen bg-gray-50 md:pt-20">
+      {/* Mobile top bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-30 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between px-4 h-14">
+        <button onClick={() => setSidebarOpen(true)} className="p-2 text-gray-600 hover:text-redAccent">
+          <currentTab.icon size={20} />
+        </button>
+        <span className="text-xs font-black text-gray-700 uppercase tracking-widest">{currentTab.label}</span>
+        <button onClick={() => setSidebarOpen(true)} className="p-2 text-gray-600 hover:text-redAccent">
+          <Settings size={18} />
+        </button>
+      </div>
+
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-40 flex">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setSidebarOpen(false)} />
+          <aside className="relative w-72 bg-white flex flex-col h-full shadow-2xl">
+            <div className="p-6 flex items-center justify-between border-b border-gray-100">
+              <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Management</h2>
+              <button onClick={() => setSidebarOpen(false)} className="p-1 text-gray-400 hover:text-gray-900">
+                <ExternalLink size={16} className="rotate-180" />
+              </button>
+            </div>
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+              {tabs.map(tab => (
+                <button key={tab.id} onClick={() => { setActiveTab(tab.id); setSidebarOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold uppercase tracking-tight transition-all ${activeTab === tab.id ? 'bg-redAccent text-white shadow-lg shadow-redAccent/20' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}`}>
+                  <tab.icon size={18} />{tab.label}
+                </button>
+              ))}
+            </nav>
+            <div className="p-6 border-t border-gray-100">
+              <button onClick={async () => await signOut()} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold uppercase tracking-tight text-red-500 hover:bg-red-50 transition-all">
+                <LogOut size={18} />Sign Out
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className="w-64 bg-white border-r border-gray-200 flex-col fixed h-full z-20 hidden md:flex">
         <div className="p-6">
           <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Management</h2>
           <nav className="space-y-1">
@@ -44,22 +89,23 @@ export default function AdminDashboard() {
         </div>
       </aside>
 
-      <main className="flex-1 ml-64 p-10">
+      <main className="flex-1 md:ml-64 p-4 md:p-10 pt-16 md:pt-0">
         <header className="mb-10 flex justify-between items-end">
           <div className="animate-in fade-in slide-in-from-left-4 duration-700">
-            <h1 className="text-4xl font-black text-gray-900 uppercase tracking-tighter leading-none mb-2">{tabs.find(t => t.id === activeTab).label}</h1>
+            <h1 className="text-2xl md:text-4xl font-black text-gray-900 uppercase tracking-tighter leading-none mb-2">{currentTab.label}</h1>
             <p className="text-gray-500 font-bold uppercase text-[10px] tracking-widest">Administrator Control Panel • {session.user.name}</p>
           </div>
-          <Link to="/" className="flex items-center gap-2 px-6 py-2 border-2 border-gray-200 rounded-full text-xs font-black uppercase tracking-widest text-gray-500 hover:border-redAccent hover:text-redAccent transition-all bg-white shadow-sm">
+          <Link to="/" className="flex items-center gap-2 px-4 md:px-6 py-2 border-2 border-gray-200 rounded-full text-xs font-black uppercase tracking-widest text-gray-500 hover:border-redAccent hover:text-redAccent transition-all bg-white shadow-sm">
             Preview Site <ExternalLink size={14} />
           </Link>
         </header>
-        <section className="bg-white rounded-[2.5rem] p-8 min-h-[600px] border border-gray-100 shadow-sm relative overflow-hidden animate-in fade-in zoom-in-95 duration-500">
+        <section className="bg-white rounded-[2.5rem] p-4 md:p-8 min-h-[600px] border border-gray-100 shadow-sm relative overflow-hidden animate-in fade-in zoom-in-95 duration-500">
           {activeTab === 'overview' && <OverviewTab />}
           {activeTab === 'config' && <ConfigTab />}
           {activeTab === 'events' && <EventsTab />}
           {activeTab === 'partners' && <PartnersTab />}
           {activeTab === 'users' && <UsersTab />}
+          {activeTab === 'schoolregs' && <SchoolRegsTab />}
         </section>
       </main>
     </div>
@@ -514,6 +560,165 @@ function UsersTab() {
           {loading ? 'Validating...' : 'Authorize New Admin'}
         </button>
       </form>
+    </div>
+  );
+}
+
+function SchoolRegsTab() {
+  const queryClient = useQueryClient();
+  const { data: regs = [], isLoading } = useQuery({
+    queryKey: ['school-regs'],
+    queryFn: () => apiFetch.get('/api/school-reg'),
+  });
+  const deleteMutation = useMutation({
+    mutationFn: (id) => apiFetch.delete(`/api/school-reg/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['school-regs'] }),
+  });
+  const [search, setSearch] = useState('');
+  const [sortField, setSortField] = useState('created_at');
+  const [sortDir, setSortDir] = useState('desc');
+  const [expanded, setExpanded] = useState(null);
+
+  const toggleSort = (field) => {
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortField(field); setSortDir('asc'); }
+  };
+
+  const filtered = regs
+    .filter(r => {
+      const q = search.toLowerCase();
+      return !q || [r.name, r.email, r.school_name, r.group_studied].some(v => v?.toLowerCase().includes(q));
+    })
+    .sort((a, b) => {
+      const va = a[sortField] ?? '';
+      const vb = b[sortField] ?? '';
+      return sortDir === 'asc' ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+    });
+
+  const exportCSV = () => {
+    const cols = ['id','name','dob','email','student_mobile','parent_mobile','school_name','residential_address','referred_by','group_studied','expected_cutoff','joined_whatsapp','created_at'];
+    const rows = [cols.join(','), ...filtered.map(r => cols.map(c => `"${String(r[c] ?? '').replace(/"/g, '""')}"`).join(','))];
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `school_registrations_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  };
+
+  const SortIcon = ({ field }) => sortField === field
+    ? (sortDir === 'asc' ? <ChevronUp size={12} /> : <ChevronDown size={12} />)
+    : <ChevronDown size={12} className="opacity-20" />;
+
+  if (isLoading) return <div className="flex items-center justify-center h-64 text-gray-400 font-black uppercase tracking-widest text-xs">Loading...</div>;
+
+  return (
+    <div className="space-y-6">
+      {/* Header row */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-red-900 rounded-2xl text-white shadow-lg shadow-red-900/20">
+            <ClipboardList size={24} />
+          </div>
+          <div>
+            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter leading-none">School Registrations</h2>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">{filtered.length} of {regs.length} entries</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <input
+            type="text" placeholder="Search name, email, school..."
+            value={search} onChange={e => setSearch(e.target.value)}
+            className="px-4 py-2.5 text-xs font-bold border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-red-900/20 w-56"
+          />
+          <button onClick={exportCSV} className="flex items-center gap-2 px-4 py-2.5 bg-gray-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-900 transition-colors">
+            <Download size={14} /> CSV
+          </button>
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-gray-300">
+          <ClipboardList size={48} className="mb-4" />
+          <p className="font-black uppercase tracking-widest text-xs">No registrations found</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-gray-100">
+          <table className="w-full text-xs">
+            <thead className="bg-gray-50 border-b border-gray-100">
+              <tr>
+                {[['#','id'],['Name','name'],['School','school_name'],['Group','group_studied'],['Cutoff','expected_cutoff'],['Submitted','created_at']].map(([label, field]) => (
+                  <th key={field} onClick={() => toggleSort(field)}
+                    className="px-4 py-3 text-left font-black text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors whitespace-nowrap select-none">
+                    <span className="inline-flex items-center gap-1">{label} <SortIcon field={field} /></span>
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-left font-black text-gray-400 uppercase tracking-widest">WA</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map((r) => (
+                <React.Fragment key={r.id}>
+                  <tr className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 font-black text-gray-300">#{r.id}</td>
+                    <td className="px-4 py-3 font-bold text-gray-900 whitespace-nowrap">{r.name}</td>
+                    <td className="px-4 py-3 text-gray-500 max-w-[180px] truncate">{r.school_name}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-1 bg-red-50 text-red-900 rounded-lg font-black text-[9px] uppercase tracking-widest whitespace-nowrap">{r.group_studied}</span>
+                    </td>
+                    <td className="px-4 py-3 font-black text-gray-900">{r.expected_cutoff}</td>
+                    <td className="px-4 py-3 text-gray-400 whitespace-nowrap">{new Date(r.created_at).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' })}</td>
+                    <td className="px-4 py-3">
+                      {r.joined_whatsapp
+                        ? <CheckCircle size={14} className="text-green-500" />
+                        : <AlertCircle size={14} className="text-gray-300" />}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setExpanded(expanded === r.id ? null : r.id)}
+                          className="px-3 py-1.5 rounded-lg border border-gray-200 font-black text-[9px] uppercase tracking-widest text-gray-500 hover:border-red-900 hover:text-red-900 transition-colors">
+                          {expanded === r.id ? 'Hide' : 'View'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm(`Delete registration for ${r.name}?`)) {
+                              deleteMutation.mutate(r.id);
+                            }
+                          }}
+                          className="p-1.5 rounded-lg bg-red-50 text-redAccent hover:bg-red-100 transition-colors"
+                          title="Delete registration"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {expanded === r.id && (
+                    <tr className="bg-red-50/40">
+                      <td colSpan={8} className="px-6 py-5">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
+                          {[
+                            ['Date of Birth', r.dob],
+                            ['Email', r.email],
+                            ['Student Mobile', r.student_mobile],
+                            ['Parent Mobile', r.parent_mobile],
+                            ['Referred By', r.referred_by || '—'],
+                            ['WhatsApp Joined', r.joined_whatsapp ? 'Yes' : 'No'],
+                            ['Residential Address', r.residential_address],
+                          ].map(([label, val]) => (
+                            <div key={label}>
+                              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">{label}</p>
+                              <p className="font-bold text-gray-900 text-xs break-words">{val}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

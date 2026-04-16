@@ -9,7 +9,11 @@ export const auth = betterAuth({
     enabled: true,
     minPasswordLength: 8,
   },
-  trustedOrigins: [process.env.FRONTEND_URL || 'https://ramcoad.com'],
+  trustedOrigins: [
+    process.env.FRONTEND_URL || 'https://ramcoad.com',
+    'http://172.16.4.111:5000',
+    'https://ramcoad.com',
+  ],
   advanced: {
     ipAddress: {
       trustedProxies: ['127.0.0.1'],

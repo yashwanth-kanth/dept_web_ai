@@ -8,6 +8,7 @@ import configRouter from './routes/config.js';
 import eventsRouter from './routes/events.js';
 import partnersRouter from './routes/partners.js';
 import uploadRouter from './routes/upload.js';
+import schoolRegRouter from './routes/schoolReg.js';
 import { rateLimit } from 'express-rate-limit';
 
 // Per-account login lockout (5 failures in 15 min → locked 15 min)
@@ -125,6 +126,7 @@ app.use('/api/config', configRouter);
 app.use('/api/events', eventsRouter);
 app.use('/api/partners', partnersRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/school-reg', schoolRegRouter);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

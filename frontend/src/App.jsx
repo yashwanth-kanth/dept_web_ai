@@ -15,6 +15,7 @@ import Gallery from './pages/Gallery';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
+import SchoolProgramRegForm from './pages/SchoolProgramRegForm';
 
 import { ReactLenis } from 'lenis/react';
 
@@ -60,7 +61,7 @@ function App() {
       <Router>
         <div className="flex flex-col min-h-screen relative bg-white">
             <Navbar />
-            <main className="flex-grow pt-16 relative z-10">
+            <main className="flex-grow md:pt-16 relative z-10">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
@@ -69,6 +70,7 @@ function App() {
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/admin" element={<Login />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/school-program-reg" element={<SchoolProgramRegForm />} />
               </Routes>
             </main>
             <Footer />
