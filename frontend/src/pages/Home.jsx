@@ -49,6 +49,12 @@ function BtnLabel() {
   );
 }
 
+const DEFAULT_PARTNERS = [
+  { name: 'icanio', icon: 'Cpu', tags: ['AI Solutions', 'Research'], image: '/assets/partners/icanio.png' },
+  { name: 'Ramco Systems', icon: 'Building', tags: ['Enterprise', 'Technology'], image: '/assets/partners/ramco.png' },
+  { name: 'Digispot', icon: 'Laptop', tags: ['Digital Transformation', 'Innovation'], image: '/assets/partners/digispot.png' }
+];
+
 export default function Home() {
   const { scrollY } = useScroll();
   const yHeroText = useTransform(scrollY, [0, 800], [0, 200]);
@@ -69,7 +75,8 @@ export default function Home() {
   }, []);
 
   const { data: configs = [] } = useQuery({ queryKey: ['config'], queryFn: () => apiFetch.get('/api/config') });
-  const { data: partners = [] } = useQuery({ queryKey: ['partners'], queryFn: () => apiFetch.get('/api/partners') });
+  const { data: partnersData = [] } = useQuery({ queryKey: ['partners'], queryFn: () => apiFetch.get('/api/partners') });
+  const partners = partnersData.length > 0 ? partnersData : DEFAULT_PARTNERS;
 
   const getVal = (key, fallback) => configs.find(c => c.key === key)?.value || fallback;
   const IconMap = { Cpu, Activity, Building, Laptop, Users, Trophy };
@@ -257,7 +264,7 @@ export default function Home() {
                       </div>
                     </div>
                     {partner.image && (
-                      <div className="h-48 overflow-hidden grayscale group-hover:grayscale-0 transition-all duration-1000 border-t border-gray-50">
+                      <div className="h-48 overflow-hidden transition-all duration-1000 border-t border-gray-50">
                         <VariableSpeedImage src={partner.image} className="w-full h-full object-cover" speed={0.02} />
                       </div>
                     )}

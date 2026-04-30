@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
+import SocialSidebar from './components/SocialSidebar';
 import ParallaxSection from './components/ParallaxSection';
 import { useQuery } from '@tanstack/react-query';
 import { apiFetch } from './lib/api';
@@ -75,6 +76,7 @@ function App() {
             </main>
             <Footer />
             <ChatWidget />
+            <SocialSidebar />
           </div>
         </Router>
     </ReactLenis>
