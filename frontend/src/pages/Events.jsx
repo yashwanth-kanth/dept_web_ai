@@ -45,109 +45,132 @@ export default function Events() {
 
   React.useEffect(() => {
     if (showPortal) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    return () => { document.body.style.overflow = 'unset'; };
   }, [showPortal]);
+
+  const galleryTileClasses = [
+    'lg:col-span-12 min-h-[560px]',
+    'lg:col-span-6 min-h-[360px]',
+    'lg:col-span-6 min-h-[360px]',
+    'lg:col-span-4 min-h-[320px]',
+    'lg:col-span-4 min-h-[320px]',
+    'lg:col-span-4 min-h-[320px]',
+    'lg:col-span-6 min-h-[360px]',
+    'lg:col-span-6 min-h-[360px]',
+    'lg:col-span-6 min-h-[360px]',
+    'lg:col-span-6 min-h-[360px]'
+  ];
+
+  if (showPortal && selectedEvent) {
+    return (
+      <div className="relative bg-white min-h-screen overflow-x-hidden">
+        <section className="relative pt-24 md:pt-28 pb-24 bg-white">
+          <div className="absolute inset-x-0 top-0 h-[420px] bg-gray-50 pointer-events-none" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+            <div className="flex flex-col lg:flex-row justify-between items-start gap-8 mb-12">
+              <motion.button 
+                onClick={() => { setShowPortal(false); setSelectedEvent(null); }}
+                initial={{ x: -20, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                className="flex items-center gap-3 group text-gray-900 font-black uppercase tracking-[0.28em] text-xs hover:text-redAccent transition-colors"
+              >
+                <span className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-redAccent group-hover:bg-redAccent group-hover:text-white transition-all">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
+                </span>
+                Back to Events
+              </motion.button>
+
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="max-w-3xl lg:text-right"
+              >
+                <p className="text-redAccent font-black uppercase tracking-[0.42em] text-[11px] mb-3">{selectedEvent.category}</p>
+                <h2 className="text-5xl md:text-7xl lg:text-8xl font-black text-gray-900 uppercase tracking-tighter leading-none">{selectedEvent.title}</h2>
+                <div className="mt-6 inline-flex items-center gap-3 rounded-full bg-white border border-gray-200 px-5 py-3 shadow-sm">
+                  <Calendar size={16} className="text-redAccent" />
+                  <span className="text-xs font-black uppercase tracking-widest text-gray-600">
+                    {new Date(selectedEvent.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </span>
+                </div>
+              </motion.div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-5">
+                  {(selectedEvent.images || [selectedEvent.image]).map((img, i) => (
+                    <motion.div 
+                      key={i}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                      className={`relative min-h-[250px] rounded-[1.75rem] overflow-hidden group shadow-xl border border-gray-100 bg-gray-100 ${galleryTileClasses[i] || 'lg:col-span-3 min-h-[300px]'}`}
+                    >
+                      <img src={img} alt={`${selectedEvent.title} gallery ${i + 1}`} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" loading={i > 1 ? 'lazy' : undefined} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="absolute left-5 bottom-5 rounded-full bg-white/90 px-3 py-1 text-[10px] font-black text-gray-900 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+                <div className="bg-gray-50 rounded-[2rem] p-8 md:p-10 border border-gray-100 shadow-sm">
+                  <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-200">
+                    <div className="w-12 h-12 bg-redAccent rounded-2xl flex items-center justify-center text-white shadow-lg shadow-redAccent/20">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
+                    </div>
+                    <h4 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Event Lineup</h4>
+                  </div>
+                  
+                  {selectedEvent.technical && (
+                    <div className="mb-12">
+                      <p className="text-redAccent font-black uppercase text-[11px] tracking-widest mb-6 flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full bg-redAccent" /> Technical Events
+                      </p>
+                      <ul className="space-y-4">
+                        {selectedEvent.technical.map((t, i) => (
+                          <li key={i} className="flex items-center gap-4 text-base font-bold text-gray-700 uppercase tracking-tight group/item">
+                            <span className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[10px] font-black group-hover/item:bg-redAccent group-hover/item:text-white transition-all">{i + 1}</span>
+                            {t}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {selectedEvent.nonTechnical && (
+                    <div>
+                      <p className="text-gray-400 font-black uppercase text-[11px] tracking-widest mb-6 flex items-center gap-3">
+                        <span className="w-2 h-2 rounded-full bg-gray-300" /> Non-Technical Events
+                      </p>
+                      <ul className="space-y-4">
+                        {selectedEvent.nonTechnical.map((t, i) => (
+                          <li key={i} className="flex items-center gap-4 text-base font-bold text-gray-500 uppercase tracking-tight group/item">
+                             <span className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[10px] font-black group-hover/item:bg-gray-200 transition-all">{i + 1}</span>
+                            {t}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="relative bg-white min-h-screen">
       <FloatingShape size={300} speed={0.4} top="10%" left="-5%" color="bg-redAccent/[0.03]" blur="blur-3xl" />
       <FloatingShape size={200} speed={0.6} top="40%" left="85%" color="bg-gray-100/50" blur="blur-2xl" />
-
-      <AnimatePresence>
-        {showPortal && selectedEvent && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[1000] bg-white overflow-y-auto overflow-x-hidden"
-          >
-            <div className="min-h-full w-full p-4 md:p-12 pb-32">
-              <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-                  <motion.button 
-                    onClick={() => { setShowPortal(false); setSelectedEvent(null); }}
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    className="flex items-center gap-3 group text-gray-900 font-black uppercase tracking-[0.3em] text-xs hover:text-redAccent transition-colors order-2 md:order-1"
-                  >
-                    <span className="w-12 h-12 rounded-full border border-gray-200 flex items-center justify-center group-hover:border-redAccent group-hover:bg-redAccent group-hover:text-white transition-all">
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5m7-7-7 7 7 7"/></svg>
-                    </span>
-                    Back to Events
-                  </motion.button>
-                  <div className="text-left md:text-right order-1 md:order-2">
-                    <h2 className="text-5xl md:text-7xl font-black text-gray-900 uppercase tracking-tighter leading-none mb-2">{selectedEvent.title}</h2>
-                    <p className="text-redAccent font-black uppercase tracking-[0.5em] text-[12px]">{selectedEvent.category}</p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-10 mb-20">
-                  <div className="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {(selectedEvent.images || [selectedEvent.image]).map((img, i) => (
-                      <motion.div 
-                        key={i}
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                        className={`relative rounded-[2.5rem] overflow-hidden group shadow-2xl border border-gray-100 ${i === 0 ? 'sm:col-span-2 aspect-[16/9]' : 'aspect-square'}`}
-                      >
-                        <img src={img} alt="Gallery" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </motion.div>
-                    ))}
-                  </div>
-                  <div className="md:col-span-4 space-y-8">
-                    <div className="bg-gray-50 rounded-[3rem] p-10 md:p-12 border border-gray-100 shadow-sm sticky top-12">
-                      <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-200">
-                        <div className="w-12 h-12 bg-redAccent rounded-2xl flex items-center justify-center text-white shadow-lg shadow-redAccent/20">
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/></svg>
-                        </div>
-                        <h4 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">Event Lineup</h4>
-                      </div>
-                      
-                      {selectedEvent.technical && (
-                        <div className="mb-12">
-                          <p className="text-redAccent font-black uppercase text-[11px] tracking-widest mb-6 flex items-center gap-3">
-                            <span className="w-2 h-2 rounded-full bg-redAccent" /> Technical Events
-                          </p>
-                          <ul className="space-y-4">
-                            {selectedEvent.technical.map((t, i) => (
-                              <li key={i} className="flex items-center gap-4 text-base font-bold text-gray-700 uppercase tracking-tight group/item">
-                                <span className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[10px] font-black group-hover/item:bg-redAccent group-hover/item:text-white transition-all">{i + 1}</span>
-                                {t}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                      
-                      {selectedEvent.nonTechnical && (
-                        <div>
-                          <p className="text-gray-400 font-black uppercase text-[11px] tracking-widest mb-6 flex items-center gap-3">
-                            <span className="w-2 h-2 rounded-full bg-gray-300" /> Non-Technical Events
-                          </p>
-                          <ul className="space-y-4">
-                            {selectedEvent.nonTechnical.map((t, i) => (
-                              <li key={i} className="flex items-center gap-4 text-base font-bold text-gray-500 uppercase tracking-tight group/item">
-                                 <span className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[10px] font-black group-hover/item:bg-gray-200 transition-all">{i + 1}</span>
-                                {t}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <section className="relative pt-32 pb-20 overflow-hidden border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -355,7 +378,7 @@ export default function Events() {
 
       {/* Gallery Modal */}
       <AnimatePresence>
-        {selectedEvent && (
+        {selectedEvent && !showPortal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
             <div className="absolute inset-0 bg-black/95 backdrop-blur-xl" onClick={() => setSelectedEvent(null)} />
             <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}

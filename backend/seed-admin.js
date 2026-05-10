@@ -1,53 +1,70 @@
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { auth } from './src/auth.js';
+import { pool } from './src/db.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function seedAdmin() {
-  try {
-    // Read the seed JSON file
-    const seedPath = path.join(__dirname, 'admin.seed.json');
-    const seedData = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+  const seedPath = path.join(__dirname, 'admin.seed.json');
+  const seedData = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
+  const email = seedData.email.toLowerCase();
 
-    // Extract site URL from .env.local
-    const envPath = path.join(__dirname, '.env.local');
-    const envContent = fs.readFileSync(envPath, 'utf8');
-    
-    // Extract CONVEX_SITE_URL manually
-    const siteUrlMatch = envContent.match(/CONVEX_SITE_URL=(.+)/);
-    if (!siteUrlMatch) {
-      throw new Error("Could not find CONVEX_SITE_URL in .env.local");
-    }
-    const baseUrl = siteUrlMatch[1].trim().replace(/['"]/g, '');
+  const ctx = await auth.$context;
+  let user = await ctx.adapter.findOne({
+    model: 'user',
+    where: [{ field: 'email', value: email }],
+  });
 
-    console.log(`Connecting to Better Auth endpoint at: ${baseUrl}`);
-    console.log(`Seeding Admin: ${seedData.email}...`);
-
-    const res = await fetch(`${baseUrl}/api/auth/sign-up/email`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Origin': baseUrl,
-        'Host': new URL(baseUrl).host
-      },
-      body: JSON.stringify(seedData)
+  if (!user) {
+    user = await ctx.internalAdapter.createUser({
+      name: seedData.name || 'Admin',
+      email,
+      emailVerified: true,
     });
-
-    const data = await res.json();
-
-    if (!res.ok || data.error) {
-      throw new Error(data.message || data.error?.message || "Failed to create admin");
-    }
-
-    console.log("\n✅ Admin successfully seeded into the database!");
-    console.log("You can now securely log in to the /admin portal using:");
-    console.log(`Email:   ${seedData.email}`);
-    console.log(`Password: ${seedData.password}`);
-
-  } catch (error) {
-    console.error("\n❌ Seeding Failed:", error.message);
-    if (error.message.includes('fetch')) {
-      console.log("\nMake sure your Convex backend is actively running (npx convex dev) in another terminal first!");
-    }
+    console.log(`Created admin user: ${email}`);
+  } else {
+    await ctx.internalAdapter.updateUser(user.id, {
+      name: user.name || seedData.name || 'Admin',
+      emailVerified: true,
+      updatedAt: new Date(),
+    });
+    console.log(`Found existing admin user: ${email}`);
   }
+
+  const hashedPassword = await ctx.password.hash(seedData.password);
+  const account = await ctx.adapter.findOne({
+    model: 'account',
+    where: [
+      { field: 'userId', value: user.id },
+      { field: 'providerId', value: 'credential' },
+    ],
+  });
+
+  if (account) {
+    await ctx.internalAdapter.updatePassword(user.id, hashedPassword);
+    console.log('Updated admin password.');
+  } else {
+    await ctx.internalAdapter.createAccount({
+      userId: user.id,
+      accountId: user.id,
+      providerId: 'credential',
+      password: hashedPassword,
+    });
+    console.log('Created admin credential account.');
+  }
+
+  console.log('\nAdmin login:');
+  console.log(`Email: ${email}`);
+  console.log(`Password: ${seedData.password}`);
 }
 
-seedAdmin();
+seedAdmin()
+  .catch((error) => {
+    console.error('Seeding failed:', error.message);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await pool.end();
+  });
